@@ -1,0 +1,48 @@
+method: random
+
+name: abcd_final_sweep
+program: 03-main.py
+parameters:
+  epoch:
+    value: 0
+  n_epochs:
+    value: 150
+  batchSize:
+    value: 64
+  lr:
+    distribution: log_uniform
+    max: -2.3025850929940455
+    min: -11.512925464970229
+  weightdecay:
+    distribution: uniform
+    max: 5e-2
+    min: 5e-4
+  lamb0:
+    values: [1]
+  lamb1:
+    values: [0]
+  lamb2:
+    values: [0]
+  lamb3:
+    values: [0, 0.1, 0.2]
+  lamb4:
+    values: [0]
+  lamb5:
+    values: [0]
+  layer:
+    value: 2
+  ratio:
+    distribution: uniform
+    max: 0.8
+    min: 0.2
+  optim:
+    values: ["Adam"]
+  n_layers:
+    values: ["32,128,256"]
+  n_fc_layers:
+    values: ["512"]
+  n_clustered_communities:
+    values: [6]
+  early_stop_steps:
+    value: 24
+  

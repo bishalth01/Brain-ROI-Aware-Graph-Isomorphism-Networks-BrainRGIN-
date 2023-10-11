@@ -1,0 +1,45 @@
+method: random
+
+name: abcd_final_sweep
+program: 03-main.py
+parameters:
+  epoch:
+    value: 150
+  n_epochs:
+    value: 150
+  fold:
+    value: 4
+  batchSize:
+    value: 64
+  lr:
+    value: 0.004887
+  layer:
+    value: 2
+  weightdecay:
+    value: 0.009811
+  lamb0:
+    value: 1
+  lamb1:
+    value: 0
+  lamb2:
+    value: 0
+  lamb3:
+    value: 0.1
+  lamb4:
+    value: 0
+  lamb5:
+    value: 0
+  layer:
+    value: 2
+  ratio:
+    value: 0.2006
+  optim:
+    value: Adam
+  n_layers:
+    values: ["32,32"]
+  n_fc_layers:
+    values: ["512"]
+  n_clustered_communities:
+    value: 6
+  early_stop_steps:
+    value: 32
