@@ -38,9 +38,10 @@ warnings.filterwarnings("ignore")
 
 # Input data variables
 
-root_folder = 'data/'
+root_folder = '/data/users2/bthapaliya/ADNIData/'
 data_folder = os.path.join(root_folder, 'data/Output')
-phenotype = os.path.join(root_folder, 'Final_Phenotype_File_For_Intelligence_100Nodes.txt')
+#phenotype = os.path.join(root_folder, 'Final_Phenotype_File_For_Intelligence_100Nodes.txt')
+phenotype = os.path.join(root_folder, 'Classification_Dem_MCI_Controls.txt')
 
 
 def fetch_filenames(subject_IDs, file_type, atlas):
@@ -149,13 +150,11 @@ def get_ids(num_subjects=None):
         subject_IDs    : list of all subject IDs
     """
 
-    # subject_IDs = np.genfromtxt(os.path.join(root_folder, 'ABCD53ComponentsFluidSubjects.txt'), dtype=str)
 
-    # if num_subjects is not None:
-    #     subject_IDs = subject_IDs[:num_subjects]
-
-    subject_file = pd.read_csv(os.path.join(root_folder, 'Final_Phenotype_File_For_Intelligence_100Nodes.txt'), sep="\t")
-    subject_IDs = subject_file["SubjectIds"]
+    #subject_file = pd.read_csv(os.path.join(root_folder, '/data/users2/bthapaliya/ADNIData/ADNISubjectIds.npy'), sep="\t")
+    subject_file = np.load('/data/users2/bthapaliya/ADNIData/ADNISubjectIds.npy')
+    #subject_IDs = subject_file["SubjectIds"]
+    subject_IDs = np.asarray(subject_file)
     return subject_IDs
 
 
@@ -166,10 +165,31 @@ def get_subject_score(subject_list, score):
     with open(phenotype) as csv_file:
         reader = csv.DictReader(csv_file, delimiter="\t")
         for row in reader:
-                    scores_dict[row['SubjectIds']] = row[score];
+                    if row['PTID'] in subject_list:
+                        if row[score]=="Dementia":
+                            finalscore = 0
+                        elif row[score]=="MCI":
+                            finalscore=1
+                        else:
+                            finalscore=2
+                        scores_dict[row['PTID']] = finalscore;
 
     return scores_dict
 
+def get_subject_score_index(subject_list, score):
+    scores_dict = {}
+    final_subject_list=[]
+
+    with open(phenotype) as csv_file:  # Replace 'phenotype.csv' with the correct file name
+        reader = csv.DictReader(csv_file, delimeiter="\t")
+        for index, row in enumerate(reader):  # Use enumerate to get both index and row
+            if row['PTID'] in subject_list:
+                #subjectindex = subject_list.index(row['PTID'])
+                subjectindex = np.where(subject_list == row['PTID'])[0][0]
+                scores_dict[row['PTID']] = subjectindex  # Store the index of the row
+                final_subject_list.append(row['PTID'])
+
+    return scores_dict, final_subject_list
 
 # preprocess phenotypes. Categorical -> ordinal representation
 def preprocess_phenotypes(pheno_ft, params):
@@ -231,26 +251,27 @@ def get_networks(subject_list, matnumbers, kind, iter_no='', seed=1234, n_subjec
 
     all_networks = []
     #fl = root_folder + "/" + "AllPhenotypessFNC53.pt";
-    fl = root_folder + "/" + "AllStaticFNCSFluid100.npy";
+    #fl = root_folder + "/" + "AllStaticFNCSFluid100.npy";
+    fl = "/data/users2/bthapaliya/ADNIData/CorrelationMatrix.npy"
     index = 0;
     #matrix = mat73.loadmat(fl)[variable]
     npy_array = np.load(fl)
     #npy_array = torch.load(fl)
-    for i in range(len(subject_list)):
-        all_networks.append(npy_array[i])
-        index = index + 1
-        print("Done for subjectId " + str(index))
-    # for subject in subject_list:
-    #     # if int(subject) < 56874:
-    #     #     continue
-    #     if len(kind.split()) == 2:
-    #         kind = '_'.join(kind.split())
-    #     # fl = os.path.join(data_folder, subject,
-    #     #                       subject + "_" + atlas_name + "_" + kind.replace(' ', '_') + ".mat")
-    #     matrix_final = matrix[int(matnumber)]
-    #     all_networks.append(matrix_final)
+    # for i in range(len(subject_list)):
+    #     all_networks.append(npy_array[i])
     #     index = index + 1
     #     print("Done for subjectId " + str(index))
+    for subject, matnumber in zip(subject_list, matnumbers):
+        # if int(subject) < 56874:
+        #     continue
+        if len(kind.split()) == 2:
+            kind = '_'.join(kind.split())
+        # fl = os.path.join(data_folder, subject,
+        #                       subject + "_" + atlas_name + "_" + kind.replace(' ', '_') + ".mat")
+        matrix_final = npy_array[matnumber]
+        all_networks.append(matrix_final)
+        index = index + 1
+        print("Done for subjectId " + str(index))
 
 
     if kind in ['TE', 'TPE']:
