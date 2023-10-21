@@ -62,13 +62,13 @@ def main():
 
     # Get subject IDs and class labels
     subject_IDs = Reader.get_ids()
-    labels = Reader.get_subject_score(subject_IDs, score='nihtbx_cryst_agecorrected')
-    matnumbers = Reader.get_subject_score(subject_IDs, score='nihtbx_cryst_agecorrected')
+    labels = Reader.get_subject_score(subject_IDs, score='DX')
+    matnumbers, final_subject_list = Reader.get_subject_score_index(subject_IDs, score='DX')
     #matnumbers = Reader.get_subject_score(subject_IDs, score='mat_numbers')
 
     # Number of subjects and classes for binary classification
     num_classes = args.nclass
-    num_subjects = len(subject_IDs)
+    num_subjects = len(final_subject_list)
     params['n_subjects'] = num_subjects
 
     # Initialise variables for class labels and acquisition sites
@@ -79,17 +79,16 @@ def main():
 
     # Get class labels for all subjects
     for i in range(num_subjects):
-        #y_data[i, int(labels[subject_IDs[i]]) - 1] = 1
-        y[i] = float(labels[subject_IDs[i]])
+        y[i] = float(list(labels.values())[i])
 
     # Compute feature vectors (vectorised connectivity networks)
-    fea_corr = Reader.get_networks(subject_IDs,matnumbers.values(), iter_no='', kind='correlation', atlas_name=atlas) #(1035, 200, 200)
+    fea_corr = Reader.get_networks(final_subject_list,matnumbers.values(), iter_no='', kind='correlation', atlas_name=atlas) #(1035, 200, 200)
     #fea_pcorr = Reader.get_networks_pcorr(subject_IDs, iter_no='', kind='partial correlation', atlas_name=atlas) #(1035, 200, 200)
 
-    if not os.path.exists(os.path.join(data_folder,'100_raw_cryst_sitecorrected')):
-        os.makedirs(os.path.join(data_folder,'100_raw_cryst_sitecorrected'))
-    for i, subject in enumerate(subject_IDs):
-        dd.io.save(os.path.join(data_folder,'100_raw_cryst_sitecorrected',subject+'.h5'),{'corr':fea_corr[i],'pcorr':fea_corr[i],'label':y[i]})
+    if not os.path.exists(os.path.join(data_folder,'afni_data_raw')):
+        os.makedirs(os.path.join(data_folder,'afni_data_raw'))
+    for i, subject in enumerate(final_subject_list):
+        dd.io.save(os.path.join(data_folder,'afni_data_raw',subject+'.h5'),{'corr':fea_corr[i],'pcorr':fea_corr[i],'label':y[i]})
 
 if __name__ == '__main__':
     main()
